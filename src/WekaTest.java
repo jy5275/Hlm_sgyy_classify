@@ -47,11 +47,7 @@ public class WekaTest {
     public static void main(String args[]) throws Exception {
         BufferedReader datafile = null;
         String filename = "extractarff.txt";
-        try {
-            datafile = new BufferedReader(new FileReader(filename));
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        datafile = new BufferedReader(new FileReader(filename));
 
         Instances data = new Instances(datafile); // data有13个instance
         data.setClassIndex(data.numAttributes() - 1);

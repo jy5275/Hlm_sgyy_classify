@@ -35,7 +35,7 @@ public class Honglm {
         return eva; // 返回一个集合,元素是testSet中条目的分类结果
     }
 
-    static void createTrainInstances(String dirpath) throws Exception {
+    public static void createTrainInstances(String dirpath) throws Exception {
         String filepath = dirpath + "TrainingSet.txt";
         BufferedReader datafile = new BufferedReader(new FileReader(filepath));
         String str = null, sdict = null;
@@ -54,7 +54,7 @@ public class Honglm {
             }
         }
 
-        BufferedWriter extractfile = new BufferedWriter(new FileWriter("./TrainInstances.txt"));
+        BufferedWriter extractfile = new BufferedWriter(new FileWriter(dirpath + "TrainInstances.txt"));
         extractfile.write("@relation TrainInstances\n");
         String prefix = "@attribute keyword", suffix = " numeric\n";
         for (int i = 0; i < dictsize; i++) {
@@ -71,7 +71,7 @@ public class Honglm {
             BufferedReader filetoextract = new BufferedReader(new FileReader(path));
             String s = null;
             while ((s = filetoextract.readLine()) != null) { // 逐行读取这一回
-                if (s.contains("手机") || s.contains("上卷") || s.contains("下卷"))
+                if (s.contains("手机"))
                     continue;
                 List<Term> termList = segm.seg(s);
                 for (int i = 0; i < termList.size(); i++) {
@@ -94,11 +94,11 @@ public class Honglm {
         }
         datafile.close();
         extractfile.close();
-        System.out.println("TrainingInstaces Built.");
+        // System.out.println("TrainingInstaces Built.");
 
     }
 
-    static void createTestInstances(String dirpath) throws Exception {
+    public static void createTestInstances(String dirpath) throws Exception {
         String filepath = dirpath + "TestingSetDir.txt";
         BufferedReader datafile = new BufferedReader(new FileReader(filepath));
         String str = null, sdict = null;
@@ -117,7 +117,7 @@ public class Honglm {
             }
         }
 
-        BufferedWriter extractfile = new BufferedWriter(new FileWriter("./TestInstances.txt"));
+        BufferedWriter extractfile = new BufferedWriter(new FileWriter(dirpath + "TestInstances.txt"));
         extractfile.write("@relation TestInstances\n");
         String prefix = "@attribute keyword", suffix = " numeric\n";
         for (int i = 0; i < dictsize; i++) {
@@ -155,17 +155,21 @@ public class Honglm {
         }
         datafile.close();
         extractfile.close();
-        System.out.println("TestingInstaces Built.");
+        readdict.close();
+        // System.out.println("TestingInstaces Built.");
     }
 
     public static void main(String args[]) throws Exception {
         hm_ch2id = new HashMap<Character, Integer>();
         hm_id2ch = new HashMap<Integer, Character>();
+        String path = args[0];
+        // createTrainInstances("C:/Users/52750/source/Java_eclipse/Honglm/TrainingSet.txt");
+        // createTestInstances("C:/Users/52750/source/Java_eclipse/Honglm/TestingSetDir.txt");
+        createTrainInstances(path);
+        createTestInstances(path);
 
-        createTrainInstances(args[0]);
-        createTestInstances(args[1]);
-        BufferedReader datafile_train = new BufferedReader(new FileReader("./TrainInstances.txt"));
-        BufferedReader datafile_test = new BufferedReader(new FileReader("./TestInstances.txt"));
+        BufferedReader datafile_train = new BufferedReader(new FileReader(path + "TrainInstances.txt"));
+        BufferedReader datafile_test = new BufferedReader(new FileReader(path + "TestInstances.txt"));
 
         Instances data_train = new Instances(datafile_train);
         Instances data_test = new Instances(datafile_test);
@@ -177,23 +181,25 @@ public class Honglm {
         Evaluation validation = classify(model, data_train, data_test);
         predictions.appendElements(validation.predictions());
 
-        FileWriter fw = new FileWriter("[java19]HW2_1600013239.txt");
+        FileWriter fw = new FileWriter(path + "results.txt");
 
-        // double correct = 0;
+        double correct = 0;
         for (int i = 0; i < predictions.size(); i++) {
             Prediction np = (Prediction) predictions.elementAt(i);
             String res = (int) (np.predicted()) + " \n";
             fw.write(res);
             /*
-             * if (i < 60) { if (np.predicted() == 0.0) correct++; } else if (i < 80) { if
-             * (np.predicted() == 1.0) correct++; } else { if (np.predicted() == 2.0)
-             * correct++; }
+             * if (i < 60) { if (np.predicted() == 0.0) correct += 1; } else if (i < 80) {
+             * if (np.predicted() == 1.0) correct += 1; } else { if (np.predicted() == 2.0)
+             * correct += 1; }
              */
         }
         // System.out.println("Accuracy = " + (double) (100 * correct /
         // predictions.size()) + '%');
 
         fw.close();
-        System.out.println("Finished.");
+        System.out.println("Classification finished.");
+        datafile_train.close();
+        datafile_test.close();
     }
 }
