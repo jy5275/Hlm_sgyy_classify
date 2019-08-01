@@ -1,0 +1,28 @@
+{
+    // 使用 IntelliSense 了解相关属性。 
+    // 悬停以查看现有属性的描述。
+    // 欲了解更多信息，请访问: https://go.microsoft.com/fwlink/?linkid=830387
+    // 
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "java",
+            "name": "CodeLens (Launch) - RPCSender",
+            "request": "launch",
+            "mainClass": "RPCSender",
+            "projectName": "Honglm"
+        },
+        {
+            "type": "java",
+            "name": "Debug (Launch) - Current File",
+            "request": "launch",
+            "console": "internalConsole",
+            "preLaunchTask": "build",
+            "args": "./",
+            "classPaths": [
+                "bin;C:/Program Files/Java/jdk-12.0.2/lib;C:/Program Files/Java/jdk-12.0.2/lib/tools.jar;C:/Program Files/Java/jdk-12.0.2/lib/dt.jar;C:/Program Files/Java/jdk-12.0.2/lib/weka.jar"
+            ],
+            "mainClass": "${file}"
+        }
+    ]
+}

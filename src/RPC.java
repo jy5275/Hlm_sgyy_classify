@@ -1,10 +1,13 @@
 import java.io.*;
 import java.util.*;
+/*
 import com.hankcs.hanlp.*;
 import com.hankcs.hanlp.seg.*;
 import com.hankcs.hanlp.seg.NShort.*;
 import com.hankcs.hanlp.seg.common.Term;
+*/
 
+/*
 import weka.classifiers.*;
 import weka.classifiers.Evaluation;
 import weka.classifiers.bayes.*;
@@ -12,19 +15,25 @@ import weka.classifiers.evaluation.*;
 import weka.classifiers.rules.*;
 import weka.classifiers.trees.*;
 import weka.core.*;
-
+*/
 import java.net.*;
+//import java.Thread.*;
 
 class RPCReceiver implements Runnable {
     ServerSocket socket6789;
     boolean stop = false;
     Socket client = null;
-    Honglm lock;
+    Honglm hlm;
+    RPCSender sender;
 
-    public RPCReceiver(Honglm l_) throws IOException {
+    public RPCReceiver(Honglm h_) throws IOException {
+        super();
         socket6789 = new ServerSocket(6789);
         socket6789.setSoTimeout(8000);
-        lock = l_;
+        hlm = h_;
+    }
+    public void setSender(RPCSender s_){
+        sender = s_;
     }
 
     public void terminate() {
@@ -41,7 +50,7 @@ class RPCReceiver implements Runnable {
                 System.out.println("Unknown method!");
                 return;
             } else { // OK!
-                RPC.sendsubmit(msg, lock);
+                sender.sendsubmit(msg, hlm);
             }
         } else {
             System.out.println("----------- Received message -----------");
@@ -53,41 +62,48 @@ class RPCReceiver implements Runnable {
     public void run() {
         int timeoutn = 0;
         Hashtable<String, Object> readone;
-        while (timeoutn < 3) {
+        while (timeoutn < 4) {
             try {
                 client = socket6789.accept();
                 // System.out.println("LocalPort:" + client.getLocalPort());
                 // System.out.println("LocalSocketAddress:" + client.getLocalSocketAddress());
-                timeoutn = 0;
             } catch (Exception e) {
-                e.printStackTrace();
+                //e.printStackTrace();
+                System.out.println("Time out: " + timeoutn);
                 timeoutn++;
+                if(timeoutn==3){
+                    try{
+                        sender.sendgetscore();
+                    }catch(Exception e1){
+                        e1.printStackTrace();
+                    }
+                }
                 continue;
             }
-
             try {
                 ObjectInputStream in = new ObjectInputStream(client.getInputStream());
                 readone = (Hashtable<String, Object>) in.readObject();
                 answer(readone);
-            } catch (Exception e) {
-                e.printStackTrace();
+            } catch (Exception e1) {
+                e1.printStackTrace();
             }
         }
+        
         try {
-            RPC.sendgetscore();
             client.close();
             socket6789.close();
-        } catch (Exception e) {
-            e.printStackTrace();
+        } catch (Exception e1) {
+            e1.printStackTrace();
         }
-
     }
 }
 
-public class RPC {
+class RPCSender implements Runnable {
+    public RPCSender(){super();}
 
-    public static void sendinit() throws Exception {
-        Socket client = new Socket("222.29.98.46", 9876);
+    public void sendinit() throws Exception {
+        Thread.sleep(500);
+        Socket client = new Socket("localhost", 9876);
         ObjectOutputStream out = new ObjectOutputStream(client.getOutputStream());
         Hashtable<String, Object> msgtosend = new Hashtable<String, Object>();
         msgtosend.put("method", "initTest");
@@ -100,7 +116,7 @@ public class RPC {
         client.close();
     }
 
-    private static boolean deleteDir(File dir) {
+    private boolean deleteDir(File dir) {
         if (dir.isDirectory()) {
             String[] children = dir.list(); // 递归删除目录中的子目录/文件
             for (int i = 0; i < children.length; i++) {
@@ -115,8 +131,8 @@ public class RPC {
         return dir.delete();
     }
 
-    public static void sendgetscore() throws Exception {
-        Socket client = new Socket("222.29.98.46", 9876);
+    public void sendgetscore() throws Exception {
+        Socket client = new Socket("localhost", 9876);
         ObjectOutputStream out = new ObjectOutputStream(client.getOutputStream());
         Hashtable<String, Object> msgtosend = new Hashtable<String, Object>();
         msgtosend.put("method", "getScore");
@@ -128,8 +144,8 @@ public class RPC {
         client.close();
     }
 
-    public static void sendclear() throws Exception {
-        Socket client = new Socket("222.29.98.46", 9876);
+    public void sendclear() throws Exception {
+        Socket client = new Socket("localhost", 9876);
         ObjectOutputStream out = new ObjectOutputStream(client.getOutputStream());
         Hashtable<String, Object> msgtosend = new Hashtable<String, Object>();
         msgtosend.put("method", "clearScore");
@@ -141,7 +157,7 @@ public class RPC {
         client.close();
     }
 
-    public static void sendsubmit(Hashtable<String, Object> question, Honglm lock) throws Exception {
+    public void sendsubmit(Hashtable<String, Object> question, Honglm hlm) throws Exception {
         List<String> classifyit = (List<String>) question.get("param4");
         List<String> train0 = (List<String>) question.get("param1");
         List<String> train1 = (List<String>) question.get("param2");
@@ -196,7 +212,7 @@ public class RPC {
         testsetw.close();
 
         String[] arg = { tdirname };
-        lock.main(arg);
+        hlm.main(arg);
 
         BufferedReader br = new BufferedReader(new FileReader(resultname));
         String tempString;
@@ -217,7 +233,7 @@ public class RPC {
         msg.put("param3", ans);
         msg.put("id", id);
 
-        Socket client = new Socket("222.29.98.46", 9876);
+        Socket client = new Socket("localhost", 9876);
         ObjectOutputStream out = new ObjectOutputStream(client.getOutputStream());
         out.writeObject(msg);
         out.flush();
@@ -225,15 +241,24 @@ public class RPC {
         client.close();
         deleteDir(tdir);
     }
+    public void run(){
+        //tr.join();
 
-    public static void main(String[] args) throws Exception {
+    }
+}
+
+public class RPC{
+    RPC(){super();}
+    public static void main(String[] args)throws Exception{
         Honglm hlm = new Honglm();
-        RPCReceiver receiver = new RPCReceiver(hlm);
-        Thread rthread = new Thread(receiver);
+        RPCReceiver r = new RPCReceiver(hlm);
+        Thread rthread = new Thread(r);
+        RPCSender s = new RPCSender();
+        r.setSender(s);
         rthread.start();
-        // sendclear();
-        sendinit();
-        sendgetscore();
+        s.sendclear();
+
+        s.sendinit();
         rthread.join();
     }
 }

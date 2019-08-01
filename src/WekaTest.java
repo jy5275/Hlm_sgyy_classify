@@ -10,13 +10,14 @@ import weka.classifiers.rules.*;
 import weka.classifiers.trees.*;
 import weka.core.*;
 //import weka.datagenerators.classifiers.classification.BayesNet;
-
+/*
 import com.hankcs.hanlp.HanLP;
 import com.hankcs.hanlp.seg.common.Term;
 import com.hankcs.hanlp.seg.*;
 import com.hankcs.hanlp.seg.NShort.*;
-
+*/
 public class WekaTest {
+    public WekaTest(){super();}
     public static Evaluation classify(Classifier model, Instances trainSet, Instances testSet) throws Exception {
         Evaluation eva = new Evaluation(trainSet);
         model.buildClassifier(trainSet);

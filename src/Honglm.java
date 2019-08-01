@@ -7,16 +7,16 @@
  */
 import java.io.*;
 import java.util.*;
-import weka.classifiers.bayes.BayesNet;
+//import weka.classifiers.bayes.BayesNet;
 import weka.classifiers.evaluation.Prediction;
-
+/*
 import com.hankcs.hanlp.seg.*;
 import com.hankcs.hanlp.seg.NShort.*;
 import com.hankcs.hanlp.seg.common.Term;
-
+*/
 import weka.classifiers.*;
 import weka.classifiers.Evaluation;
-import weka.classifiers.rules.*;
+//import weka.classifiers.rules.*;
 import weka.classifiers.trees.J48;
 import weka.core.*;
 
@@ -39,7 +39,6 @@ public class Honglm {
         String filepath = dirpath + "TrainingSet.txt";
         BufferedReader datafile = new BufferedReader(new FileReader(filepath));
         String str = null, sdict = null;
-        Segment segm = new NShortSegment();
 
         BufferedReader readdict = new BufferedReader(new FileReader("./dict.txt"));
         int dictsize = 0;
@@ -73,13 +72,10 @@ public class Honglm {
             while ((s = filetoextract.readLine()) != null) { // 逐行读取这一回
                 if (s.contains("手机"))
                     continue;
-                List<Term> termList = segm.seg(s);
-                for (int i = 0; i < termList.size(); i++) {
-                    String word = termList.get(i).word;
-                    if (word.length() > 1)
-                        continue;
-                    if (hm_ch2id.containsKey(word.charAt(0))) {
-                        int tmpid = hm_ch2id.get(word.charAt(0));
+                for (int i = 0; i < s.length(); i++) {
+                    char c = s.charAt(i);                    
+                    if (hm_ch2id.containsKey(c)) {
+                        int tmpid = hm_ch2id.get(c);
                         cnt[tmpid]++;
                     }
                 }
@@ -102,7 +98,6 @@ public class Honglm {
         String filepath = dirpath + "TestingSetDir.txt";
         BufferedReader datafile = new BufferedReader(new FileReader(filepath));
         String str = null, sdict = null;
-        Segment segm = new NShortSegment();
 
         BufferedReader readdict = new BufferedReader(new FileReader("./dict.txt"));
         int dictsize = 0;
@@ -136,13 +131,10 @@ public class Honglm {
             while ((s = filetoextract.readLine()) != null) { // 逐行读取这一回
                 if (s.contains("手机") || s.contains("上卷") || s.contains("下卷"))
                     continue;
-                List<Term> termList = segm.seg(s);
-                for (int i = 0; i < termList.size(); i++) {
-                    String word = termList.get(i).word;
-                    if (word.length() > 1)
-                        continue;
-                    if (hm_ch2id.containsKey(word.charAt(0))) {
-                        int tmpid = hm_ch2id.get(word.charAt(0));
+                for (int i = 0; i < s.length(); i++) {
+                    char c = s.charAt(i);
+                    if (hm_ch2id.containsKey(c)) {
+                        int tmpid = hm_ch2id.get(c);
                         cnt[tmpid]++;
                     }
                 }

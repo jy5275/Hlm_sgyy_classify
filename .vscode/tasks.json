@@ -1,0 +1,29 @@
+{
+    // See https://go.microsoft.com/fwlink/?LinkId=733558
+    // for the documentation about the tasks.json format
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "build",
+            "type": "shell",
+            "command": "javac",
+            "args": [
+                // Ask msbuild to generate full paths for file names.
+                "-encoding",
+                "UTF-8",
+                "-d",
+                "bin",
+                "-cp",
+                "bin;C:\\Program Files\\Java\\jdk-12.0.2\\lib\\tools.jar;C:\\Program Files\\Java\\jdk-12.0.2\\lib\\dt.jar;C:\\Program Files\\Java\\jdk-12.0.2\\lib\\weka.jar",
+                "src\\*.java"
+            ],
+            "group": "build",
+            "presentation": {
+                // Reveal the output only if unrecognized errors occur.
+                "reveal": "always"
+            },
+            // Use the standard MS compiler pattern to detect errors, warnings and infos
+            "problemMatcher": "$msCompile"
+        }
+    ]
+}
